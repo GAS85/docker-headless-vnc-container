@@ -1,67 +1,101 @@
 # Docker container images with "headless" VNC session
 
-This repository contains a collection of Docker images with headless VNC environments.
+The repository contains a Docker images with headless VNC environments. It is a based on a clone from https://github.com/ConSol/docker-headless-vnc-container 
+
+Several additional tools for DevOps and Development are added. To reduce complexity some options from the based repo like Centos OS and IceWM are deleted.   
 
 Each Docker image is installed with the following components:
 
-* Desktop environment [**Xfce4**](http://www.xfce.org) or [**IceWM**](http://www.icewm.org/)
+* Desktop environment [**Xfce4**](http://www.xfce.org)
 * VNC-Server (default VNC port `5901`)
 * [**noVNC**](https://github.com/novnc/noVNC) - HTML5 VNC client (default http port `6901`)
-* Browsers:
+* Browser:
   * Mozilla Firefox
+* Linux commands and tools:
+  * vim wget curl net-tools locales zip git jq tree dnsutils inetutils-traceroute iputils-ping
+* Optional Browsers:
+  * Google Chrome
   * Chromium
+* Optional Developer IDE:
+  * Eclipse
+  * IntelliJ
+  * Netbeans
+  * Visual Studio Code
+* Optional Programing Languages:
+  * Java
+  * Python
+  * NodeJS
+* Additional optional tools:
+  * Docker CLI and Kubernets helm
+  * OpenShift CLI oc
+  * Postman
+
+![Docker VNC Desktop access via HTML page](.pics/overview.png)     
   
-![Docker VNC Desktop access via HTML page](.pics/vnc_container_view.png)
+![Docker VNC Desktop access via HTML page](.pics/desktop.png)
 
-## Build Status
-`master`:  [![Build Status MASTER](https://travis-ci.org/ConSol/docker-headless-vnc-container.svg?branch=master)](https://travis-ci.org/ConSol/docker-headless-vnc-container) `dev`: [![Build Status DEV](https://travis-ci.org/ConSol/docker-headless-vnc-container.svg?branch=dev)](https://travis-ci.org/ConSol/docker-headless-vnc-container)
+## Usage in OpenShift / AppAgile
 
-## Current provided OS & UI sessions:
-* `consol/centos-xfce-vnc`: __Centos7 with `Xfce4` UI session__ 
+To build image in OpenShift / AppAgile you can use the dashboard or OpenShift oc client.
+### Dashboard:
 
-  [![](https://images.microbadger.com/badges/version/consol/centos-xfce-vnc.svg)](https://hub.docker.com/r/consol/centos-xfce-vnc/) [![](https://images.microbadger.com/badges/image/consol/centos-xfce-vnc.svg)](http://microbadger.com/images/consol/centos-xfce-vnc)
-
-* `consol/ubuntu-xfce-vnc`: __Ubuntu with `Xfce4` UI session__
-
-  [![](https://images.microbadger.com/badges/version/consol/ubuntu-xfce-vnc.svg)](https://hub.docker.com/r/consol/ubuntu-xfce-vnc/) [![](https://images.microbadger.com/badges/image/consol/ubuntu-xfce-vnc.svg)](http://microbadger.com/images/consol/ubuntu-xfce-vnc)
-
-* `consol/centos-icewm-vnc`: __Centos7 with `IceWM` UI session__ 
-
-  [![](https://images.microbadger.com/badges/version/consol/centos-icewm-vnc.svg)](https://hub.docker.com/r/consol/centos-icewm-vnc/) [![](https://images.microbadger.com/badges/image/consol/centos-icewm-vnc.svg)](http://microbadger.com/images/consol/centos-icewm-vnc)
-
-* `consol/ubuntu-icewm-vnc`: __Ubuntu with `IceWM` UI session__
-
-  [![](https://images.microbadger.com/badges/version/consol/ubuntu-icewm-vnc.svg)](https://hub.docker.com/r/consol/ubuntu-icewm-vnc/) [![](https://images.microbadger.com/badges/image/consol/ubuntu-icewm-vnc.svg)](http://microbadger.com/images/consol/ubuntu-icewm-vnc)
-
-## OpenShift / Kubernetes
-
-It's also possible to run the images in container orchestration platforms like [Kubernetes](https://kubernetes.io) or [OpenShift](https://openshift.io/). For more information how to deploy containers in the cluster, take a look at:
-
-* [Kubernetes usage of "headless" VNC Docker images](./kubernetes/README.md)
-* [OpenShift usage of "headless" VNC Docker images](./openshift/README.md) 
-
-## Usage
-Usage is **similar** for all provided images, e.g. for `consol/centos-xfce-vnc`:
-
-- Print out help page:
-
-      docker run consol/centos-xfce-vnc --help
-
-- Run command with mapping to local port `5901` (vnc protocol) and `6901` (vnc web access):
-
-      docker run -d -p 5901:5901 -p 6901:6901 consol/centos-xfce-vnc
+  * make a copy of [./openshift/openshift.base-template.yam](./openshift/openshift.base-template.yaml)
   
-- Change the default user and group within a container to your own with adding `--user $(id -u):$(id -g)`:
+  * go to OpenShift / AppAgile -> Add to Project -> Import YAML / JSON
+  ![Docker VNC Desktop access via HTML page](.pics/importYaml.png)
+  
+  * paste YAML into text field
+  ![Docker VNC Desktop access via HTML page](.pics/pastInTextBox.png)
+  
+  * add application name, vnc password, ...
+  ![Docker VNC Desktop access via HTML page](.pics/addOptions1.png)
 
-      docker run -d -p 5901:5901 -p 6901:6901 --user $(id -u):$(id -g) consol/centos-xfce-vnc
+  * add options; TRUE if you like to use in the image
+  ![Docker VNC Desktop access via HTML page](.pics/addOptions2.png)
+  
+  * save to internal catalog if you like
+  ![Docker VNC Desktop access via HTML page](.pics/AddTemplate.png)
+  
+### OpenShift oc client:
+  * TODO: add description
 
-- If you want to get into the container use interactive mode `-it` and `bash`
-      
-      docker run -it -p 5901:5901 -p 6901:6901 consol/centos-xfce-vnc bash
+#### Objects in OpenShift / AppAgile
+There are several OpenShift objects like "build", "deployment config", "service", etc.
 
-- Build an image from scratch:
+Click on link "Routes - External Traffic" to get access via your desktop browser. Best experinces are wit Chrome or Firefox.
+![Docker VNC Desktop access via HTML page](.pics/route.png)
 
-      docker build -t consol/centos-xfce-vnc centos-xfce-vnc
+The default installation password is stored in a OpenShift secret. After installation you can change the default password in the secret. This will trigger a new deployment.
+![Docker VNC Desktop access via HTML page](.pics/secret.png)
+
+Or change password in the terminal of the pod. This password will be overwriten if the pod restartet. Type vncpasswd and add new password to times.
+![Docker VNC Desktop access via HTML page](.pics/passwd.png)
+
+## Usage 
+This chapter comes from the basic repo.
+TODO: Review needed.
+ 
+The usage is for all provide images **similar**, for instance see following the usage of the `consol/centos-xfce-vnc` image:
+
+Print out help page:
+
+    docker run consol/centos-xfce-vnc --help    
+
+Run command with mapping to local port `5901` (vnc protocol) and `6901` (vnc web access):
+
+    docker run -d -p 5901:5901 -p 6901:6901 consol/centos-xfce-vnc
+  
+Change the default user and group within a container to your own with adding `--user $(id -u):$(id -g)`:
+
+    docker run -d -p 5901:5901 -p 6901:6901 --user $(id -u):$(id -g) consol/centos-xfce-vnc
+
+If you want to get into the container use interactive mode `-it` and `bash`     
+
+    docker run -it -p 5901:5901 -p 6901:6901 consol/centos-xfce-vnc bash
+
+Build an image from scratch:
+
+    docker build -t consol/centos-xfce-vnc centos-xfce-vnc
 
 # Connect & Control
 If the container is started like mentioned above, connect via one of these options:
@@ -71,30 +105,28 @@ If the container is started like mentioned above, connect via one of these optio
 * connect via __noVNC HTML5 lite client__: [`http://localhost:6901/?password=vncpassword`](http://localhost:6901/?password=vncpassword) 
 
 
-## Hints
+## Hints from cloned repository
+TODO: Review and try out
 
 ### 1) Extend a Image with your own software
-Since version `1.1.0` all images run as non-root user per default, so if you want to extend the image and install software, you have to switch back to the `root` user:
+Since `1.1.0` all images run as non-root user per default, so that means, if you want to extend the image and install software, you have to switch in the `Dockerfile` back to the `root` user:
 
 ```bash
 ## Custom Dockerfile
 FROM consol/centos-xfce-vnc
 ENV REFRESHED_AT 2018-03-18
 
-# Switch to root user to install additional software
-USER 0
-
 ## Install a gedit
+USER 0
 RUN yum install -y gedit \
     && yum clean all
-
 ## switch back to default user
 USER 1000
 ```
 
 ### 2) Change User of running Sakuli Container
 
-Per default, since version `1.3.0` all container processes will be executed with user id `1000`. You can change the user id as follows: 
+Per default, since version `1.3.0` all container processes will executed with user id `1000`. You can change the user id like follow: 
 
 #### 2.1) Using root (user id `0`)
 Add the `--user` flag to your docker run command:
@@ -125,7 +157,7 @@ the docker run command:
     docker run -it -p 5901:5901 -p 6901:6901 -e VNC_RESOLUTION=800x600 consol/centos-xfce-vnc
     
 ### 4) View only VNC
-Since version `1.2.0` it's possible to prevent unwanted control via VNC. Therefore you can set the environment variable `VNC_VIEW_ONLY=true`. If set, the startup script will create a random password for the control connection and use the value of `VNC_PW` for view only connection over the VNC connection.
+Since version `1.2.0` it's possible to prevent unwanted control over VNC. Therefore you can set the environment variable `VNC_VIEW_ONLY=true`. If set the docker startup script will create a random cryptic password for the control connection and use the value of `VNC_PW` for the view only connection over the VNC connection.
 
      docker run -it -p 5901:5901 -p 6901:6901 -e VNC_VIEW_ONLY=true consol/centos-xfce-vnc
 
@@ -138,29 +170,3 @@ If you open some graphic/work intensive websites in the Docker container (especi
   
 Thx @raghavkarol for the hint! 
 
-## How to release
-See **[how-to-release.md](./how-to-release.md)**
-
-## Contributors
-
-At this point we want to thank all contributors, which helped to move this great project by submitting code, writing documentation, or adapting other tools to play well together with the docker headless container.
-
-* [Tobias Schneck](https://github.com/toschneck) - Lead development
-* [Robert Bohne](https://github.com/rbo) - IceWM images
-* [hsiaoyi0504](https://github.com/hsiaoyi0504) - PR [#66](https://github.com/ConSol/docker-headless-vnc-container/pull/66)
-* [dmhumph](https://github.com/dmhumph) - PR [#44](https://github.com/ConSol/docker-headless-vnc-container/issue/44) 
-* [Simon Hofmann](https://github.com/s1hofmann) - Current maintainer
-
-## Changelog
-
-The current changelog is provided here: **[changelog.md](./changelog.md)**
-
-## Contact
-For questions, professional support or maybe some hints, feel free to contact us via **[testautomatisierung@consol.de](mailto:testautomatisierung@consol.de)** or open an [issue](https://github.com/ConSol/docker-headless-vnc-container/issues/new).
-
-The guys behind:
-
-**ConSol Software GmbH** <br/>
-*Franziskanerstr. 38, D-81669 Munich* <br/>
-*Tel. +49-89-45841-100, Fax +49-89-45841-111*<br/>
-*Homepage: http://www.consol.de E-Mail: [info@consol.de](info@consol.de)*

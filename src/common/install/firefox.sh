@@ -3,19 +3,67 @@ set -e
 
 echo "Install Firefox"
 
+# Does not work in Ubuntu, Centos unclear
 function disableUpdate(){
     ff_def="$1/browser/defaults/profile"
     mkdir -p $ff_def
-    echo <<EOF_FF
-user_pref("app.update.auto", false);
-user_pref("app.update.enabled", false);
-user_pref("app.update.lastUpdateTime.addon-background-update-timer", 1182011519);
-user_pref("app.update.lastUpdateTime.background-update-timer", 1182011519);
-user_pref("app.update.lastUpdateTime.blocklist-background-update-timer", 1182010203);
-user_pref("app.update.lastUpdateTime.microsummary-generator-update-timer", 1222586145);
-user_pref("app.update.lastUpdateTime.search-engine-update-timer", 1182010203);
-EOF_FF
-    > $ff_def/user.js
+    echo "//" > $ff_def/user.js
+    echo "user_pref("app.update.auto", false);" >> $ff_def/user.js
+    echo "user_pref("app.update.enabled", false);" >> $ff_def/user.js
+    echo "user_pref("app.update.lastUpdateTime.addon-background-update-timer", 1182011519);" >> $ff_def/user.js
+    echo "user_pref("app.update.lastUpdateTime.background-update-timer", 1182011519);" >> $ff_def/user.js
+    echo "user_pref("app.update.lastUpdateTime.blocklist-background-update-timer", 1182010203);" >> $ff_def/user.js
+    echo "user_pref("app.update.lastUpdateTime.microsummary-generator-update-timer", 1222586145);" >> $ff_def/user.js
+    echo "user_pref("app.update.lastUpdateTime.search-engine-update-timer", 1182010203);" >> $ff_def/user.js
+}
+
+# Does not work in Ubuntu, Centos unclear
+function setDefault(){
+    ff_cfg="$1/mozilla.cfg"
+    echo "//" > $ff_cfg
+    echo "lockPref("browser.startup.homepage"), "http://www.google.com");" >> $ff_cfg
+    echo "lockPref("app.update.enabled", false);" >> $ff_cfg
+    echo "lock_pref("browser.tabs.remote.autostart", false);" >>$ff_cfg
+    
+    ff_autocfg="$1/defaults/pref/autoconfig.js"
+    echo "//" > $ff_autocfg
+    echo "pref("general.config.obscure_value", 0);" >> $ff_autocfg
+    echo "pref("general.config.filename", "mozilla.cfg");" >>$ff_autocfg
+}
+
+function addMenuItem() {
+cat > /usr/share/applications/firefox.desktop << EOF
+[Desktop Entry]
+Version=1.0
+Name=Firefox Web Browser
+Name[de]=Firefox - internetbrowser
+Name[en_GB]=Firefox Web Browser
+Comment=Browse the World Wide Web
+Comment[de]=Im Internet surfen
+GenericName=Web Browser
+GenericName[de]=Webbrowser
+Keywords=Internet;WWW;Browser;Web;Explorer
+Keywords[de]=Internet;WWW;Browser;Web;Explorer;Webseite;Site;surfen;online;browsen
+Exec=firefox %u
+Terminal=false
+X-MultipleArgs=false
+Type=Application
+Icon=/usr/lib/firefox/browser/chrome/icons/default/default64.png
+Categories=GNOME;GTK;Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/rss+xml;application/rdf+xml;image/gif;image/jpeg;image/png;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;x-scheme-handler/chrome;video/webm;application/x-xpinstall;
+StartupNotify=true
+Actions=NewWindow;NewPrivateWindow;
+[Desktop Action NewWindow]
+Name=Open a New Window
+Name[de]=Ein neues Fenster öffnen
+Exec=firefox -new-window
+OnlyShowIn=Unity;
+[Desktop Action NewPrivateWindow]
+Name=Open a New Private Window
+Name[de]=Ein neues privates Fenster öffnen
+Exec=firefox -private-window
+OnlyShowIn=Unity;
+EOF
 }
 
 #copy from org/sakuli/common/bin/installer_scripts/linux/install_firefox_portable.sh
@@ -30,7 +78,8 @@ function instFF() {
             echo "FF_URL: $FF_URL"
             wget -qO- $FF_URL | tar xvj --strip 1 -C $FF_INST/
             ln -s "$FF_INST/firefox" /usr/bin/firefox
-            disableUpdate $FF_INST
+            setDefault $FF_INST
+            addMenuItem
             exit $?
         fi
     fi
@@ -38,13 +87,4 @@ function instFF() {
     exit -1
 }
 
-instFF '45.9.0esr' '/usr/lib/firefox'
-
-#yum -y install firefox-45.7.0-2.el7.centos
-#yum -y install firefox
-#yum clean all
-#apt-get update
-#apt-get install -y firefox
-#apt-get install -y firefox=45*
-#apt-mark hold firefox
-#apt-get clean -y
+instFF '60.2.0esr' '/usr/lib/firefox'
